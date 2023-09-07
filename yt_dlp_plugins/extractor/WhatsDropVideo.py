@@ -4,7 +4,7 @@ from yt_dlp.compat import compat_str
 from bs4 import BeautifulSoup
 import os
 from datetime import datetime
-from rich import print
+#from rich import print
 
 
 class WhatsDropVideoIE(InfoExtractor):
@@ -125,7 +125,7 @@ class WhatsDropChannelIE(InfoExtractor):
         count_videos = 0
         while True:  # Loop to run indefinitely through every page
             url = f'https://whatsdrop.com/@{channel_name}?page={page_num}'
-            print(f'[green]Checking page {page_num}[/green]: {url}')
+            #print(f'[green]Checking page {page_num}[/green]: {url}')
             webpage = self._download_webpage(url, channel_name, note=f'Downloading page {page_num}')
             soup = BeautifulSoup(webpage, 'html.parser')
 
@@ -134,7 +134,7 @@ class WhatsDropChannelIE(InfoExtractor):
 
             # If no video containers are found, break the loop
             if not video_containers:
-                print(f'[red]No videos found on page {page_num}[/red]')
+                #print(f'[red]No videos found on page {page_num}[/red]')
                 break
 
             for container in video_containers:
@@ -146,7 +146,7 @@ class WhatsDropChannelIE(InfoExtractor):
             page_num += 1  # Increment the page number
 
         # Print amount of videos found
-        print(f'[green]Found {count_videos} videos[/green]')
+        #print(f'[green]Found {count_videos} videos[/green]')
 
     def _real_extract(self, url):
         channel_id = self._match_id(url)
