@@ -2,17 +2,20 @@
 
 ## Introduction 📚
 
-Welcome to the WhatsDrop.com YT-DLP Plugin. This tool enhances your video downloading experience from WhatsDrop.com, allowing you to grab individual videos or entire channels with ease.
+Welcome to the WhatsDrop.com YT-DLP Plugin, a tool designed to enhance your media downloading experience from WhatsDrop.com by enabling you to effortlessly fetch individual videos, images, or entire uploader's content.
 
-> 📝 **Note**: This plugin and README were largely assisted by OpenAI's GPT-4 model.
+> 📝 **Note**: This plugin and README were crafted with the assistance of OpenAI's GPT-4 model.
 
 ## Features 🌟
 
-- **Individual Video Downloads** 🎥  
-  Grab videos one at a time.
+- **Individual Media Downloads** 🎥🖼️  
+  Download videos or images individually.
   
-- **Channel Downloads** 📺  
-  Download an entire channel's video lineup.
+- **Uploader Content Downloads** 📺  
+  Download all media content from an entire uploader's page.
+
+- **Support for Image Posts** 🖼️  
+  Download image-only posts from WhatsDrop.com.
 
 ## Installation Guide 🖥️
 
@@ -32,24 +35,24 @@ Welcome to the WhatsDrop.com YT-DLP Plugin. This tool enhances your video downlo
 
 ### Commands 📜
 
-- **Download an Individual Video** 🎥  
+- **Download an Individual Video or Image** 🎥🖼️  
   ```bash
-  yt-dlp "https://whatsdrop.com/example_video"
+  yt-dlp "https://whatsdrop.com/example_media"
   ```
   
-- **Download a Channel** 📺  
+- **Download an Uploader's Content** 📺  
   ```bash
-  yt-dlp "https://whatsdrop.com/@example_channel"
+  yt-dlp "https://whatsdrop.com/@example_uploader"
   ```
   
 ### Metadata Extraction 🔍
 
-- 🏷️ Video Title
-- 🔠 Video ID
+- 🏷️ Title
+- 🔠 ID
 - 📝 Description
 - 🙋 Uploader Username
-- 🖥️ Video Dimensions
-- ⏱️ Video Duration
+- 🖥️ Dimensions (for videos)
+- ⏱️ Duration (for videos)
 - 👁️ View Count
 - 👍 Like Count
 - 👎 Dislike Count
@@ -57,7 +60,7 @@ Welcome to the WhatsDrop.com YT-DLP Plugin. This tool enhances your video downlo
 
 ### Limitations and Known Issues ❗
 
-- 📉 **Video Quality**: The plugin is set to download the 'streaming' version of the video, which is what you typically watch on the site. A 'high-quality' download option is in the code but has been disabled (commented out) because it wasn't functioning properly. For most users, the quality difference is hardly noticeable.
+- 📉 **Video Quality**: The plugin is set to download the 'streaming' version of the video, which is what you typically watch on the site. A 'high-quality' download option is in the code but has been disabled (commented out) due to functionality issues. For most users, the quality difference is hardly noticeable.
 
 - 🗨️ **Comments**: Downloading of comments is not supported at this time.
 
