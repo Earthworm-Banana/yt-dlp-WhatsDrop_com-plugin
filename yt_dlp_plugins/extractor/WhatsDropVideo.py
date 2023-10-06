@@ -114,12 +114,12 @@ class WhatsDropVideoIE(InfoExtractor):
             upload_date_dt = datetime.fromisoformat(upload_date_str.replace("Z", "+00:00"))
             upload_date = upload_date_dt.strftime('%Y%m%d')
 
-        return {
-            'id': compat_str(video_id),
+        if image_url:
+            return {
+            'id': video_id,
             'title': title,
             'description': description,
             'uploader': username,
-            'thumbnail': thumbnail,
             'width': video_width,
             'height': video_height,
             'duration': video_duration,
@@ -129,7 +129,23 @@ class WhatsDropVideoIE(InfoExtractor):
             'like_count': like_count,
             'dislike_count': dislike_count,
         }
+        else:
+            return {
+            'id': video_id,
+            'title': title,
+            'thumbnail': thumbnail,
+            'description': description,
+            'uploader': username,
+            'width': video_width,
+            'height': video_height,
+            'duration': video_duration,
+            'formats': formats,
+            'upload_date': upload_date,
+            'view_count': view_count,
+            'like_count': like_count,
+            'dislike_count': dislike_count,
 
+            }
 
 class WhatsDropChannelIE(InfoExtractor):
     _VALID_URL = r'https?://(?:www\.)?whatsdrop\.com/@(?P<id>[^/?&]+)'
@@ -144,11 +160,17 @@ class WhatsDropChannelIE(InfoExtractor):
             soup = BeautifulSoup(webpage, 'html.parser')
 
             # Find video URLs on the channel page based on your provided HTML sample
-            media_containers = soup.find_all('a', {'class': 'boxpost tube'}) or soup.find_all('a', {'class': 'boxpost image'})
+            video_containers = soup.find_all('a', {'class': 'boxpost tube'})
+            image_containers = soup.find_all('a', {'class': 'boxpost image'})
 
-            # If no video containers are found, break the loop
+            media_containers = video_containers + image_containers
+
+
+            #media_containers = soup.find_all('a', {'class': 'boxpost tube'}) and soup.find_all('a', {'class': 'boxpost image'})
+
+            # If no media containers are found, break the loop
             if not media_containers:
-                #print(f'[red]No videos found on page {page_num}[/red]')
+                #print(f'[red]No media found on page {page_num}[/red]')
                 break
 
             for container in media_containers:
