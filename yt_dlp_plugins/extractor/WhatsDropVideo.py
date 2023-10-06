@@ -1,4 +1,4 @@
-import rich
+#import rich
 from yt_dlp.extractor.common import InfoExtractor
 from yt_dlp.compat import compat_str
 from bs4 import BeautifulSoup
@@ -8,7 +8,9 @@ from datetime import datetime
 
 
 class WhatsDropVideoIE(InfoExtractor):
-    _VALID_URL = r'https?://(?:www\.)?whatsdrop\.com/(?P<id>[^/]+)'
+    #_VALID_URL = r'https?://(?:www\.)?whatsdrop\.com/(?P<id>[^/]+)'
+    # id changes to unknownID_videoID from videoID
+    _VALID_URL = r'https?://(?:www\.)?whatsdrop\.com/(?P<some_unknown_id>[^/]+)_(?P<id>[^/]+)'
 
     def _get_file_extension(self, url):
         # get the file extension from the url
@@ -79,6 +81,18 @@ class WhatsDropVideoIE(InfoExtractor):
         #        'quality': 2,
         #    })
 
+
+        # Extract image only post
+        image_div = soup.find('div', {'class': 'getfile__image'})
+        image_tag = image_div.find('img') if image_div else None
+        image_url = image_tag['src'] if image_tag else None
+        if image_url:
+            formats.append({
+                'url': image_url,
+                'ext': 'jpg',
+                'quality': 1,
+            })
+
         # Extract views
         view_count = int(soup.find('div', {'id': 'vi'}).text) if soup.find('div', {'id': 'vi'}) and soup.find('div', {
             'id': 'vi'}).text.strip() else None
@@ -130,17 +144,17 @@ class WhatsDropChannelIE(InfoExtractor):
             soup = BeautifulSoup(webpage, 'html.parser')
 
             # Find video URLs on the channel page based on your provided HTML sample
-            video_containers = soup.find_all('a', {'class': 'boxpost tube'})
+            media_containers = soup.find_all('a', {'class': 'boxpost tube'}) or soup.find_all('a', {'class': 'boxpost image'})
 
             # If no video containers are found, break the loop
-            if not video_containers:
+            if not media_containers:
                 #print(f'[red]No videos found on page {page_num}[/red]')
                 break
 
-            for container in video_containers:
+            for container in media_containers:
                 count_videos += 1
-                video_id = container['id']
-                video_url = 'https://whatsdrop.com/' + video_id
+                video_id = container['href']
+                video_url = 'https://whatsdrop.com' + video_id
                 yield self.url_result(video_url, ie=WhatsDropVideoIE.ie_key())
 
             page_num += 1  # Increment the page number
