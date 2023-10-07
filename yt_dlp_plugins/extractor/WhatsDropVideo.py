@@ -1,14 +1,21 @@
-#import rich
+# import rich
+from selenium.common.exceptions import TimeoutException
+import time
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from yt_dlp.extractor.common import InfoExtractor
-from yt_dlp.compat import compat_str
 from bs4 import BeautifulSoup
 import os
 from datetime import datetime
-#from rich import print
+
+
+# from rich import print
 
 
 class WhatsDropVideoIE(InfoExtractor):
-    #_VALID_URL = r'https?://(?:www\.)?whatsdrop\.com/(?P<id>[^/]+)'
+    # _VALID_URL = r'https?://(?:www\.)?whatsdrop\.com/(?P<id>[^/]+)'
     # id changes to unknownID_videoID from videoID
     _VALID_URL = r'https?://(?:www\.)?whatsdrop\.com/(?P<some_unknown_id>[^/]+)_(?P<id>[^/]+)'
 
@@ -81,7 +88,6 @@ class WhatsDropVideoIE(InfoExtractor):
         #        'quality': 2,
         #    })
 
-
         # Extract image only post
         image_div = soup.find('div', {'class': 'getfile__image'})
         image_tag = image_div.find('img') if image_div else None
@@ -116,46 +122,49 @@ class WhatsDropVideoIE(InfoExtractor):
 
         if image_url:
             return {
-            'id': video_id,
-            'title': title,
-            'description': description,
-            'uploader': username,
-            'width': video_width,
-            'height': video_height,
-            'duration': video_duration,
-            'formats': formats,
-            'upload_date': upload_date,
-            'view_count': view_count,
-            'like_count': like_count,
-            'dislike_count': dislike_count,
-        }
+                'id': video_id,
+                'title': title,
+                'description': description,
+                'uploader': username,
+                'width': video_width,
+                'height': video_height,
+                'duration': video_duration,
+                'formats': formats,
+                'upload_date': upload_date,
+                'view_count': view_count,
+                'like_count': like_count,
+                'dislike_count': dislike_count,
+            }
         else:
             return {
-            'id': video_id,
-            'title': title,
-            'thumbnail': thumbnail,
-            'description': description,
-            'uploader': username,
-            'width': video_width,
-            'height': video_height,
-            'duration': video_duration,
-            'formats': formats,
-            'upload_date': upload_date,
-            'view_count': view_count,
-            'like_count': like_count,
-            'dislike_count': dislike_count,
+                'id': video_id,
+                'title': title,
+                'thumbnail': thumbnail,
+                'description': description,
+                'uploader': username,
+                'width': video_width,
+                'height': video_height,
+                'duration': video_duration,
+                'formats': formats,
+                'upload_date': upload_date,
+                'view_count': view_count,
+                'like_count': like_count,
+                'dislike_count': dislike_count,
 
             }
 
+
 class WhatsDropChannelIE(InfoExtractor):
-    _VALID_URL = r'https?://(?:www\.)?whatsdrop\.com/@(?P<id>[^/?&]+)'
+    # Make a better one to ensure not conflict with other IE (etc LikedIE)
+    # _VALID_URL = r'https?://(?:www\.)?whatsdrop\.com/@(?P<id>[^/?&]+)'
+    _VALID_URL = r'https?://(?:www\.)?whatsdrop\.com/@(?P<id>[^/?&]+)(?:/(?![^/]*liked))?$'
 
     def _entries(self, channel_name):
         page_num = 1
         count_videos = 0
         while True:  # Loop to run indefinitely through every page
             url = f'https://whatsdrop.com/@{channel_name}?page={page_num}'
-            #print(f'[green]Checking page {page_num}[/green]: {url}')
+            # print(f'[green]Checking page {page_num}[/green]: {url}')
             webpage = self._download_webpage(url, channel_name, note=f'Downloading page {page_num}')
             soup = BeautifulSoup(webpage, 'html.parser')
 
@@ -165,12 +174,11 @@ class WhatsDropChannelIE(InfoExtractor):
 
             media_containers = video_containers + image_containers
 
-
-            #media_containers = soup.find_all('a', {'class': 'boxpost tube'}) and soup.find_all('a', {'class': 'boxpost image'})
+            # media_containers = soup.find_all('a', {'class': 'boxpost tube'}) and soup.find_all('a', {'class': 'boxpost image'})
 
             # If no media containers are found, break the loop
             if not media_containers:
-                #print(f'[red]No media found on page {page_num}[/red]')
+                # print(f'[red]No media found on page {page_num}[/red]')
                 break
 
             for container in media_containers:
@@ -182,9 +190,62 @@ class WhatsDropChannelIE(InfoExtractor):
             page_num += 1  # Increment the page number
 
         # Print amount of videos found
-        #print(f'[green]Found {count_videos} videos[/green]')
+        # print(f'[green]Found {count_videos} videos[/green]')
 
     def _real_extract(self, url):
         channel_id = self._match_id(url)
         entries = self._entries(channel_id)
         return self.playlist_result(entries, channel_id)
+
+
+def scroll_page(driver, pause_time):
+    last_height = driver.execute_script("return document.body.scrollHeight")
+    while True:
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(pause_time)
+        new_height = driver.execute_script("return document.body.scrollHeight")
+        if new_height == last_height:
+            break
+        last_height = new_height
+
+
+def wait_for_element(driver, timeout, by, value):
+    try:
+        WebDriverWait(driver, timeout).until(
+            EC.presence_of_element_located((by, value))
+        )
+    except TimeoutException:
+        return False
+    return True
+
+
+class WhatsDropChannelLikedIE(InfoExtractor):
+    _VALID_URL = r'https?://(?:www\.)?whatsdrop\.com/@(?P<id>[^/?&]+)\/liked'
+
+    def _entries(self, channel_name):
+        options = webdriver.FirefoxOptions()
+        options.add_argument('--headless')
+        driver = webdriver.Firefox(options=options)
+        media_containers = self.get_media_containers(driver, channel_name)
+        while not media_containers:
+            media_containers = self.get_media_containers(driver, channel_name)
+        driver.quit()
+        for container in media_containers:
+            video_id = container['href']
+            video_url = 'https://whatsdrop.com' + video_id
+            yield self.url_result(video_url, ie=WhatsDropVideoIE.ie_key())
+
+    def _real_extract(self, url):
+        channel_id = self._match_id(url)
+        entries = self._entries(channel_id)
+        return self.playlist_result(entries, channel_id)
+
+    def get_media_containers(self, driver, channel_name):
+        driver.get(f'https://whatsdrop.com/@{channel_name}/liked')
+        if not wait_for_element(driver, 10, By.CSS_SELECTOR, "a.boxpost.tube") or not wait_for_element(driver, 10, By.CSS_SELECTOR, "a.boxpost.image"):
+            return []
+        scroll_page(driver, 6)
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
+        video_containers = soup.find_all('a', {'class': 'boxpost tube'})
+        image_containers = soup.find_all('a', {'class': 'boxpost image'})
+        return video_containers + image_containers
