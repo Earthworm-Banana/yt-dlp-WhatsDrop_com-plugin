@@ -21,13 +21,9 @@ Welcome to the WhatsDrop.com YT-DLP Plugin, a tool designed to enhance your medi
   Download media from publicly viewable liked posts of a user.
 
 - **Search Results Download** 🔍  
-  Download media based on search queries.  
-  > 📝 **Note**: To use this feature, perform a search on WhatsDrop.com and copy the URL from the address bar.
-
-## Improvements and Fixes 🛠️
-
-- **Infinite Scroll Bug Fix**  
-  Fixed an issue that caused infinite scrolling on certain pages.
+  Download media based on search queries, supporting both the general and channel-specific URL patterns.
+  > 📝 **Note**: For the channel-specific URL format, ensure that your search is conducted while viewing a specific channel on WhatsDrop.com and then copy the correct URL from the address bar.
+  
 
 ## Installation Guide 🖥️
 
@@ -42,6 +38,9 @@ Welcome to the WhatsDrop.com YT-DLP Plugin, a tool designed to enhance your medi
     ```bash
     git clone https://github.com/Earthworm-Banana/yt-dlp-WhatsDrop_com-plugin.git
     ```
+   
+> 📘 For more ways of installing plugins, visit [yt-dlp's plugin installation guide](https://github.com/yt-dlp/yt-dlp#installing-plugins).
+
 
 ## Usage Guidelines 📋
 
@@ -63,9 +62,15 @@ Welcome to the WhatsDrop.com YT-DLP Plugin, a tool designed to enhance your medi
   ```
 
 - **Download Search Results** 🔍  
-  ```bash
-  yt-dlp "https://whatsdrop.com/search?search=example_query&set=example_set"
-  ```
+  Compatible with both general and channel-specific URL formats.
+  - General search format:
+    ```bash
+    yt-dlp "https://whatsdrop.com/search?search=example_query&set=example_set"
+    ```
+  - Channel-specific search format:
+    ```bash
+    yt-dlp "https://whatsdrop.com/@example_uploader/search?search=example_query&set=example_set"
+    ```
   
 ### Metadata Extraction 🔍
 
