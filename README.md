@@ -41,6 +41,11 @@ Welcome to the WhatsDrop.com YT-DLP Plugin, a tool designed to enhance your medi
     ```bash
     git clone https://github.com/Earthworm-Banana/yt-dlp-WhatsDrop_com-plugin.git
     ```
+4. 🧰 Install necessary Python packages:
+    ```bash
+    pip install selenium
+    pip install beautifulsoup4
+    ```
    
 > 📘 For more ways of installing plugins, visit [yt-dlp's plugin installation guide](https://github.com/yt-dlp/yt-dlp#installing-plugins).
 
