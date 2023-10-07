@@ -199,18 +199,23 @@ class WhatsDropChannelIE(InfoExtractor):
 
 
 class WhatsDropSearchIE(InfoExtractor):
-    _VALID_URL = r'https?://(?:www\.)?whatsdrop\.com/search\?search=(?P<query>[^&]+)&set=(?P<set>[^&]+)'
+    # Regex now supports old pattern and new pattern with usernames.
+    _VALID_URL = r'https?://(?:www\.)?whatsdrop\.com/(?:@(?P<username>[^/]+)/)?search\?search=(?P<query>[^&]+)&set=(?P<set>[^&]+)'
 
     def _get_file_extension(self, url):
         file_extension = os.path.splitext(url)[1]
         file_extension = file_extension.replace('.', '')
         return file_extension
 
-    def _entries(self, search_query, search_set):
+    def _entries(self, search_query, search_set, username=None):
         options = webdriver.FirefoxOptions()
         options.add_argument('--headless')
         driver = webdriver.Firefox(options=options)
-        driver.get(f'https://whatsdrop.com/search?search={search_query}&set={search_set}')
+        url = f'https://whatsdrop.com/'
+        if username:
+            url += f'@{username}/'
+        url += f'search?search={search_query}&set={search_set}'
+        driver.get(url)
         scroll_page(driver, 2, 100)
         soup = BeautifulSoup(driver.page_source, 'html.parser')
         driver.quit()
@@ -224,7 +229,8 @@ class WhatsDropSearchIE(InfoExtractor):
         mobj = self._match_valid_url(url)
         search_query = mobj.group('query')
         search_set = mobj.group('set')
-        entries = self._entries(search_query, search_set)
+        username = mobj.group('username')  # Capturing the username from the URL if present.
+        entries = self._entries(search_query, search_set, username)
         return self.playlist_result(entries, search_query)
 
 
