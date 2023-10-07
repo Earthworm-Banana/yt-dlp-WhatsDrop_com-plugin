@@ -198,25 +198,36 @@ class WhatsDropChannelIE(InfoExtractor):
         return self.playlist_result(entries, channel_id)
 
 
-def scroll_page(driver, pause_time):
-    last_height = driver.execute_script("return document.body.scrollHeight")
-    while True:
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(pause_time)
-        new_height = driver.execute_script("return document.body.scrollHeight")
-        if new_height == last_height:
-            break
-        last_height = new_height
+class WhatsDropSearchIE(InfoExtractor):
+    _VALID_URL = r'https?://(?:www\.)?whatsdrop\.com/search\?search=(?P<query>[^&]+)&set=(?P<set>[^&]+)'
+
+    def _get_file_extension(self, url):
+        file_extension = os.path.splitext(url)[1]
+        file_extension = file_extension.replace('.', '')
+        return file_extension
+
+    def _entries(self, search_query, search_set):
+        options = webdriver.FirefoxOptions()
+        #options.add_argument('--headless')
+        driver = webdriver.Firefox(options=options)
+        driver.get(f'https://whatsdrop.com/search?search={search_query}&set={search_set}')
+        scroll_page(driver, 2, 100)
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
+        driver.quit()
+        media_containers = soup.find_all('a', {'class': 'boxpost'})
+        for container in media_containers:
+            video_id = container['href']
+            video_url = 'https://whatsdrop.com' + video_id
+            yield self.url_result(video_url, ie=WhatsDropVideoIE.ie_key())
+
+    def _real_extract(self, url):
+        mobj = self._match_valid_url(url)
+        search_query = mobj.group('query')
+        search_set = mobj.group('set')
+        entries = self._entries(search_query, search_set)
+        return self.playlist_result(entries, search_query)
 
 
-def wait_for_element(driver, timeout, by, value):
-    try:
-        WebDriverWait(driver, timeout).until(
-            EC.presence_of_element_located((by, value))
-        )
-    except TimeoutException:
-        return False
-    return True
 
 
 class WhatsDropChannelLikedIE(InfoExtractor):
@@ -224,7 +235,7 @@ class WhatsDropChannelLikedIE(InfoExtractor):
 
     def _entries(self, channel_name):
         options = webdriver.FirefoxOptions()
-        options.add_argument('--headless')
+        # options.add_argument('--headless')
         driver = webdriver.Firefox(options=options)
         media_containers = self.get_media_containers(driver, channel_name)
         while not media_containers:
@@ -242,10 +253,41 @@ class WhatsDropChannelLikedIE(InfoExtractor):
 
     def get_media_containers(self, driver, channel_name):
         driver.get(f'https://whatsdrop.com/@{channel_name}/liked')
-        if not wait_for_element(driver, 10, By.CSS_SELECTOR, "a.boxpost.tube") or not wait_for_element(driver, 10, By.CSS_SELECTOR, "a.boxpost.image"):
+        if not wait_for_element(driver, 10, By.CSS_SELECTOR, "a.boxpost.tube") and not wait_for_element(driver, 10, By.CSS_SELECTOR, "a.boxpost.image"):
             return []
-        scroll_page(driver, 6)
+        scroll_page(driver, 6, 100, 3)
         soup = BeautifulSoup(driver.page_source, 'html.parser')
         video_containers = soup.find_all('a', {'class': 'boxpost tube'})
         image_containers = soup.find_all('a', {'class': 'boxpost image'})
         return video_containers + image_containers
+
+
+
+
+def scroll_page(driver, pause_time, max_scrolls, max_no_change=3):
+    # print("Scrolling page...")
+    last_height = driver.execute_script("return document.body.scrollHeight")
+    num_scrolls = 0
+    no_change_count = 0
+    while num_scrolls < max_scrolls:
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(pause_time)
+        new_height = driver.execute_script("return document.body.scrollHeight")
+        if new_height == last_height:
+            no_change_count += 1
+            if no_change_count >= max_no_change:
+                break
+        else:
+            no_change_count = 0
+        last_height = new_height
+        num_scrolls += 1
+
+
+def wait_for_element(driver, timeout, by, value):
+    try:
+        WebDriverWait(driver, timeout).until(
+            EC.presence_of_element_located((by, value))
+        )
+    except TimeoutException:
+        return False
+    return True
