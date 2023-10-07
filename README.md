@@ -99,16 +99,24 @@ Welcome to the WhatsDrop.com YT-DLP Plugin, a tool designed to enhance your medi
 
 ### Limitations and Known Issues ❗
 
-- 📉 **Video Quality Limitation**: The plugin defaults to downloading the 'streaming' version of videos, which generally provides satisfactory viewing quality on the site. A 'high-quality' download option is coded but inactive (commented out) due to stability issues. This alternative option often retrieves the media in a different container, although whether it always offers superior quality remains undetermined, as an extensive, comparative evaluation hasn’t been undertaken. However, for the majority of users, the streaming version’s quality is likely to be sufficiently high.
+- 📉 **Video Quality:**
+  - **Default Streaming Quality**: Videos are downloaded in the standard 'streaming' quality.
+  - **High-Quality Download**: A high-quality download option is coded but inactive due to it retrieving invalid files in trials. Although a visual comparison between both the standard and high-quality from the website (via a typical browser interaction) did not showcase a discernible quality difference, they can occasionally be provided in different media containers (e.g., streaming in .mp4 and download in .mov).
 
-- 🗨️ **Comment Downloading**: At this time, the plugin does not facilitate the downloading of comments.
+- 🗨️ **Comment Downloading:**
+  - Comment downloading is not supported by the plugin.
 
-- 🌐 **Selenium Dependency**: Selenium is required for downloading features like publicly viewable liked posts, search results, and popular media, as these pages need JavaScript for rendering. Ensure Selenium is installed and configured to fully exploit these features.
+- 🌐 **Selenium Dependency:**
+  - To fully utilize features like downloading publicly viewable liked posts, search results, and popular media which require JavaScript rendering, Selenium is needed.
 
-- ⏳ **Dynamic URL Challenges**: This issue pertains to the gradual expiration of URLs during an active download session, potentially leading to 404 errors after several minutes of downloading videos, particularly from large user profiles. This occurs because the site generates slightly dynamic URLs that time out after a certain duration. Utilizing the `--lazy-playlist` option can circumvent this, and retriggering the extraction fetches the refreshed URLs.
+- ⏳ **Dynamic URL Challenges:**
+  - Some URLs may expire during extensive download sessions, potentially causing 404 errors.
+  - Workaround: The `--lazy-playlist` option can help navigate this issue, although it may not be as effective if the extractor utilizes Selenium.
 
-- 🚫 **URL Validity Issue**: Contrary to the dynamic URL issue, the URL validity concern arises when the plugin generates invalid URLs, which don’t correspond to any actual content. This isn’t a problem related to URL expiration but seems to be a peculiarity in URL generation, prominently observed on one specific user account and not a common or widespread issue. The plugin will access a 404 page but will not attempt to download non-existing content and will proceed as per usual. Given its rarity and low impact (affecting 2 out of about 280 media items in the noted account), this isn’t an actively pursued fix but will be revisited if it emerges as a pervasive or impactful problem. 
-
+- 🚫 **URL Validity Issue:**
+  - A rare issue where the plugin might generate invalid URLs has been observed. This was noted in only one specific user account and affected a minimal amount of content (2 out of approximately 280 items).
+  - Its impact is minimal, and given its scarcity, it is not an immediate concern but will be monitored and investigated if it emerges as a recurring or impactful problem. Users are encouraged to report such instances.
+  - This does not affect the functionality of the plugin, as it only generates invalid URLs that causes a 404 error. Valid URLs are still downloaded.
 ## Support and Contributions 🤝
 
 For any issues or suggestions, feel free to [open an issue on GitHub](https://github.com/Earthworm-Banana/yt-dlp-WhatsDrop_com-plugin/issues).
