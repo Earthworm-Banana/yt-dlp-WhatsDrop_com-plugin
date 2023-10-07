@@ -21,8 +21,13 @@ Welcome to the WhatsDrop.com YT-DLP Plugin, a tool designed to enhance your medi
   Download media from publicly viewable liked posts of a user.
 
 - **Search Results Download** 🔍  
-  Download media based on search queries.
+  Download media based on search queries.  
+  > 📝 **Note**: To use this feature, perform a search on WhatsDrop.com and copy the URL from the address bar.
 
+## Improvements and Fixes 🛠️
+
+- **Infinite Scroll Bug Fix**  
+  Fixed an issue that caused infinite scrolling on certain pages.
 
 ## Installation Guide 🖥️
 
