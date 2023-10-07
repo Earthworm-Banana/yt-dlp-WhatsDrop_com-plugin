@@ -22,11 +22,12 @@ Welcome to the WhatsDrop.com YT-DLP Plugin, a tool designed to enhance your medi
 
 - **Search Results Download** 🔍  
   Download media based on search queries, supporting both the general and channel-specific URL patterns.
-  > 📝 **Note**: For the channel-specific URL format, ensure that your search is conducted while viewing a specific channel on WhatsDrop.com and then copy the correct URL from the address bar.
 
 - **Popular Media Downloads** 🎉  
-  Download media content from the popular tab on WhatsDrop.com, making trending and widely-viewed content readily accessible.
-  > 📝 **Note**: Ensure to use the specific URL format from the popular tab for this feature.
+  Download media content from the popular tab on WhatsDrop.com.
+
+- **Trending Media Downloads** 📈  
+  Access and download the latest and trending media directly from the trending page of WhatsDrop.com.
 
 ## Installation Guide 🖥️
 
@@ -82,6 +83,11 @@ Welcome to the WhatsDrop.com YT-DLP Plugin, a tool designed to enhance your medi
 - **Download Popular Media** 🎉  
   ```bash
   yt-dlp "https://whatsdrop.com/p-example_popular_media"
+  ```
+
+- **Download Trending Media** 📈
+  ```bash
+  yt-dlp "https://whatsdrop.com/t-example_trending_media"
   ```
 
 ### Metadata Extraction 🔍
