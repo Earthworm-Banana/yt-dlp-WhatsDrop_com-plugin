@@ -208,7 +208,7 @@ class WhatsDropSearchIE(InfoExtractor):
 
     def _entries(self, search_query, search_set):
         options = webdriver.FirefoxOptions()
-        #options.add_argument('--headless')
+        options.add_argument('--headless')
         driver = webdriver.Firefox(options=options)
         driver.get(f'https://whatsdrop.com/search?search={search_query}&set={search_set}')
         scroll_page(driver, 2, 100)
@@ -235,7 +235,7 @@ class WhatsDropChannelLikedIE(InfoExtractor):
 
     def _entries(self, channel_name):
         options = webdriver.FirefoxOptions()
-        # options.add_argument('--headless')
+        options.add_argument('--headless')
         driver = webdriver.Firefox(options=options)
         media_containers = self.get_media_containers(driver, channel_name)
         while not media_containers:
