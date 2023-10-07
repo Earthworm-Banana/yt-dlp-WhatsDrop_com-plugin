@@ -269,6 +269,31 @@ class WhatsDropChannelLikedIE(InfoExtractor):
 
 
 
+class WhatsDropPopularIE(InfoExtractor):
+    _VALID_URL = r'https?://(?:www\.)?whatsdrop\.com/p-(?P<id>[a-zA-Z0-9=]+)'
+
+    def _entries(self, page_id):
+        options = webdriver.FirefoxOptions()
+        options.add_argument('--headless')
+        driver = webdriver.Firefox(options=options)
+        url = f'https://whatsdrop.com/p-{page_id}'
+        driver.get(url)
+        scroll_page(driver, 2, 100)
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
+        driver.quit()
+        media_containers = soup.find_all('a', {'class': 'boxpost'})
+        for container in media_containers:
+            video_id = container['href']
+            video_url = 'https://whatsdrop.com' + video_id
+            yield self.url_result(video_url, ie=WhatsDropVideoIE.ie_key())
+
+    def _real_extract(self, url):
+        mobj = self._match_valid_url(url)
+        page_id = mobj.group('id')
+        entries = self._entries(page_id)
+        return self.playlist_result(entries, playlist_title='Popular')
+
+
 
 def scroll_page(driver, pause_time, max_scrolls, max_no_change=3):
     # print("Scrolling page...")
