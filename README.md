@@ -2,7 +2,7 @@
 
 ## Introduction 📚
 
-Welcome to the WhatsDrop.com YT-DLP Plugin, a tool designed to enhance your media downloading experience from WhatsDrop.com. This plugin allows you to effortlessly fetch individual videos, images, or entire uploader's content, as well as their publicly viewable liked posts.
+Welcome to the WhatsDrop.com YT-DLP Plugin, a tool designed to enhance your media downloading experience from WhatsDrop.com. This plugin allows you to effortlessly fetch individual videos, images, or entire uploader's content, as well as their publicly viewable liked posts and search results.
 
 > 📝 **Note**: This plugin and README were crafted with the assistance of OpenAI's GPT-4 model.
 
@@ -19,6 +19,10 @@ Welcome to the WhatsDrop.com YT-DLP Plugin, a tool designed to enhance your medi
 
 - **Publicly Viewable Liked Posts** 👍  
   Download media from publicly viewable liked posts of a user.
+
+- **Search Results Download** 🔍  
+  Download media based on search queries.
+
 
 ## Installation Guide 🖥️
 
@@ -52,6 +56,11 @@ Welcome to the WhatsDrop.com YT-DLP Plugin, a tool designed to enhance your medi
   ```bash
   yt-dlp "https://whatsdrop.com/@example_uploader/liked"
   ```
+
+- **Download Search Results** 🔍  
+  ```bash
+  yt-dlp "https://whatsdrop.com/search?search=example_query&set=example_set"
+  ```
   
 ### Metadata Extraction 🔍
 
@@ -72,7 +81,7 @@ Welcome to the WhatsDrop.com YT-DLP Plugin, a tool designed to enhance your medi
 
 - 🗨️ **Comments**: Downloading of comments is not supported at this time.
 
-- 🌐 **Selenium Requirement**: The feature for downloading publicly viewable liked posts requires Selenium due to the necessity of JavaScript for loading the pages.
+- 🌐 **Selenium Requirement**: The feature for downloading publicly viewable liked posts and search results requires Selenium due to the necessity of JavaScript for loading the pages.
 
 - ⏳ **Dynamic URLs**: Extracting from large user profiles may result in 404 errors after a few minutes of downloading videos. This is because the site's URLs are slightly dynamic and expire after a certain amount of time. To mitigate this, you can use the `--lazy-playlist` option. Additionally, re-running the extraction will fetch the newer URLs.
 
