@@ -99,13 +99,15 @@ Welcome to the WhatsDrop.com YT-DLP Plugin, a tool designed to enhance your medi
 
 ### Limitations and Known Issues ❗
 
-- 📉 **Video Quality**: The plugin is set to download the 'streaming' version of the video, which is what you typically watch on the site. A 'high-quality' download option is in the code but has been disabled (commented out) due to functionality issues. For most users, the quality difference is hardly noticeable.
+- 📉 **Video Quality Limitation**: The plugin defaults to downloading the 'streaming' version of videos, which generally provides satisfactory viewing quality on the site. A 'high-quality' download option is coded but inactive (commented out) due to stability issues. This alternative option often retrieves the media in a different container, although whether it always offers superior quality remains undetermined, as an extensive, comparative evaluation hasn’t been undertaken. However, for the majority of users, the streaming version’s quality is likely to be sufficiently high.
 
-- 🗨️ **Comments**: Downloading of comments is not supported at this time.
+- 🗨️ **Comment Downloading**: At this time, the plugin does not facilitate the downloading of comments.
 
-- 🌐 **Selenium Requirement**: The feature for downloading publicly viewable liked posts, search results, and popular media requires Selenium due to the necessity of JavaScript for loading the pages.
+- 🌐 **Selenium Dependency**: Selenium is required for downloading features like publicly viewable liked posts, search results, and popular media, as these pages need JavaScript for rendering. Ensure Selenium is installed and configured to fully exploit these features.
 
-- ⏳ **Dynamic URLs**: Extracting from large user profiles may result in 404 errors after a few minutes of downloading videos. This is because the site's URLs are slightly dynamic and expire after a certain amount of time. To mitigate this, you can use the `--lazy-playlist` option. Additionally, re-running the extraction will fetch the newer URLs.
+- ⏳ **Dynamic URL Challenges**: This issue pertains to the gradual expiration of URLs during an active download session, potentially leading to 404 errors after several minutes of downloading videos, particularly from large user profiles. This occurs because the site generates slightly dynamic URLs that time out after a certain duration. Utilizing the `--lazy-playlist` option can circumvent this, and retriggering the extraction fetches the refreshed URLs.
+
+- 🚫 **URL Validity Issue**: Contrary to the dynamic URL issue, the URL validity concern arises when the plugin generates invalid URLs, which don’t correspond to any actual content. This isn’t a problem related to URL expiration but seems to be a peculiarity in URL generation, prominently observed on one specific user account and not a common or widespread issue. The plugin will access a 404 page but will not attempt to download non-existing content and will proceed as per usual. Given its rarity and low impact (affecting 2 out of about 280 media items in the noted account), this isn’t an actively pursued fix but will be revisited if it emerges as a pervasive or impactful problem. 
 
 ## Support and Contributions 🤝
 
