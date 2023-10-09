@@ -1,24 +1,15 @@
 # import rich
-from selenium.common.exceptions import TimeoutException
 import time
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from yt_dlp.extractor.common import InfoExtractor
 from bs4 import BeautifulSoup
 import os
 from datetime import datetime
-
-
 # from rich import print
 
-
 class WhatsDropVideoIE(InfoExtractor):
-    # _VALID_URL = r'https?://(?:www\.)?whatsdrop\.com/(?P<id>[^/]+)'
-    # id changes to unknownID_videoID from videoID
     _VALID_URL = r'https?://(?:www\.)?whatsdrop\.com/(?P<some_unknown_id>[^/]+)_(?P<id>[^/]+)'
 
+    # _VALID_URL = r'https?://(?:www\.)?whatsdrop\.com/(?P<id>[^/]+)'
     def _get_file_extension(self, url):
         # get the file extension from the url
         file_extension = os.path.splitext(url)[1]
@@ -198,19 +189,80 @@ class WhatsDropChannelIE(InfoExtractor):
         return self.playlist_result(entries, channel_id)
 
 
+
+class WhatsDropTypeIE(InfoExtractor):
+    # Add the _VALID_URL pattern, should match both PIX and MOV, and in one pattern
+    # MOV_VALID_URL = r'https?://(?:www\.)?whatsdrop\.com/mov(?:/?page=(?P<page>\d+))?'
+    # PIX_VALID_URL = r'https?://(?:www\.)?whatsdrop\.com/pix(?:/?page=(?P<page>\d+))?'
+    # _VALID_URL = r'https?://(?:www\.)?whatsdrop\.com/(?:mov|pix)(?:/?page=(?P<page>\d+))?'
+    # make new pattern with url_path named as group, so mov or pix is the url_path
+    _VALID_URL = r'https?://(?:www\.)?whatsdrop\.com/(?P<url_path>mov|pix)(?:/?page=(?P<page>\d+))?'
+
+
+    def _entries(self, channel_name, url_path, page_num=1):
+        count_media = 0
+        used_selenium = False
+
+        while True:
+            # Always use Selenium first (if not used yet)
+            if not used_selenium:
+                driver = create_driver()
+                url = f'https://whatsdrop.com/{url_path}'
+                driver.get(url)
+                scroll_page(driver, 2, 100)
+                soup = BeautifulSoup(driver.page_source, 'html.parser')
+                driver.quit()
+
+                video_containers = soup.find_all('a', {'class': 'boxpost tube'})
+                image_containers = soup.find_all('a', {'class': 'boxpost image'})
+                media_containers = video_containers + image_containers
+                used_selenium = True  # Flag it as used
+
+                # Yield media from Selenium
+                for container in media_containers:
+                    count_media += 1
+                    media_id = container['href']
+                    media_url = 'https://whatsdrop.com' + media_id
+                    yield self.url_result(media_url, ie=WhatsDropVideoIE.ie_key())
+
+            # Use non-Selenium method for paginated content
+            url = f'https://whatsdrop.com/{url_path}?page={page_num}'
+            webpage = self._download_webpage(url, channel_name, note=f'Downloading page {page_num}')
+            soup = BeautifulSoup(webpage, 'html.parser')
+
+            video_containers = soup.find_all('a', {'class': 'boxpost tube'})
+            image_containers = soup.find_all('a', {'class': 'boxpost image'})
+            media_containers = video_containers + image_containers
+
+            # Break if there's no media on the paginated page
+            if not media_containers:
+                break
+
+            # Yield media from paginated content
+            for container in media_containers:
+                count_media += 1
+                media_id = container['href']
+                media_url = 'https://whatsdrop.com' + media_id
+                yield self.url_result(media_url, ie=WhatsDropVideoIE.ie_key())
+
+            # Proceed to the next paginated page
+            page_num += 1
+
+    def _real_extract(self, url):
+        mobj = self._match_valid_url(url)
+        page = mobj.group('page')
+        url_path = mobj.group('url_path')
+        entries = self._entries(url, url_path, page_num=int(page) if page else 1)
+        return self.playlist_result(entries, url)
+
+
+
 class WhatsDropSearchIE(InfoExtractor):
     # Regex now supports old pattern and new pattern with usernames.
     _VALID_URL = r'https?://(?:www\.)?whatsdrop\.com/(?:@(?P<username>[^/]+)/)?search\?search=(?P<query>[^&]+)&set=(?P<set>[^&]+)'
 
-    def _get_file_extension(self, url):
-        file_extension = os.path.splitext(url)[1]
-        file_extension = file_extension.replace('.', '')
-        return file_extension
-
     def _entries(self, search_query, search_set, username=None):
-        options = webdriver.FirefoxOptions()
-        options.add_argument('--headless')
-        driver = webdriver.Firefox(options=options)
+        driver = create_driver()
         url = f'https://whatsdrop.com/'
         if username:
             url += f'@{username}/'
@@ -234,15 +286,11 @@ class WhatsDropSearchIE(InfoExtractor):
         return self.playlist_result(entries, search_query)
 
 
-
-
 class WhatsDropChannelLikedIE(InfoExtractor):
     _VALID_URL = r'https?://(?:www\.)?whatsdrop\.com/@(?P<id>[^/?&]+)\/liked'
 
     def _entries(self, channel_name):
-        options = webdriver.FirefoxOptions()
-        options.add_argument('--headless')
-        driver = webdriver.Firefox(options=options)
+        driver = create_driver()
         media_containers = self.get_media_containers(driver, channel_name)
         while not media_containers:
             media_containers = self.get_media_containers(driver, channel_name)
@@ -258,8 +306,11 @@ class WhatsDropChannelLikedIE(InfoExtractor):
         return self.playlist_result(entries, channel_id)
 
     def get_media_containers(self, driver, channel_name):
+        from selenium.webdriver.common.by import By
         driver.get(f'https://whatsdrop.com/@{channel_name}/liked')
-        if not wait_for_element(driver, 10, By.CSS_SELECTOR, "a.boxpost.tube") and not wait_for_element(driver, 10, By.CSS_SELECTOR, "a.boxpost.image"):
+        if not wait_for_element(driver, 10, By.CSS_SELECTOR, "a.boxpost.tube") and not wait_for_element(driver, 10,
+                                                                                                        By.CSS_SELECTOR,
+                                                                                                        "a.boxpost.image"):
             return []
         scroll_page(driver, 6, 100, 3)
         soup = BeautifulSoup(driver.page_source, 'html.parser')
@@ -268,20 +319,19 @@ class WhatsDropChannelLikedIE(InfoExtractor):
         return video_containers + image_containers
 
 
-
 class WhatsDropPopularIE(InfoExtractor):
     _VALID_URL = r'https?://(?:www\.)?whatsdrop\.com/p-(?P<id>[a-zA-Z0-9=]+)'
 
     def _entries(self, page_id):
-        options = webdriver.FirefoxOptions()
-        options.add_argument('--headless')
-        driver = webdriver.Firefox(options=options)
+        driver = create_driver()
         url = f'https://whatsdrop.com/p-{page_id}'
         driver.get(url)
         scroll_page(driver, 2, 100)
         soup = BeautifulSoup(driver.page_source, 'html.parser')
         driver.quit()
-        media_containers = soup.find_all('a', {'class': 'boxpost'})
+        video_containers = soup.find_all('a', {'class': 'boxpost tube'})
+        image_containers = soup.find_all('a', {'class': 'boxpost image'})
+        media_containers = video_containers + image_containers
         for container in media_containers:
             video_id = container['href']
             video_url = 'https://whatsdrop.com' + video_id
@@ -293,19 +343,20 @@ class WhatsDropPopularIE(InfoExtractor):
         entries = self._entries(page_id)
         return self.playlist_result(entries, playlist_title='Popular')
 
+
 class WhatsDropTrendingIE(InfoExtractor):
     _VALID_URL = r'https?://(?:www\.)?whatsdrop\.com/trending'
 
     def _entries(self):
-        options = webdriver.FirefoxOptions()
-        options.add_argument('--headless')
-        driver = webdriver.Firefox(options=options)
+        driver = create_driver()
         url = 'https://whatsdrop.com/trending'
         driver.get(url)
         scroll_page(driver, 2, 100)
         soup = BeautifulSoup(driver.page_source, 'html.parser')
         driver.quit()
-        media_containers = soup.find_all('a', {'class': 'boxpost'})
+        video_containers = soup.find_all('a', {'class': 'boxpost tube'})
+        image_containers = soup.find_all('a', {'class': 'boxpost image'})
+        media_containers = video_containers + image_containers
         for container in media_containers:
             video_id = container['href']
             video_url = 'https://whatsdrop.com' + video_id
@@ -314,6 +365,8 @@ class WhatsDropTrendingIE(InfoExtractor):
     def _real_extract(self, url):
         entries = self._entries()
         return self.playlist_result(entries, playlist_title='Trending')
+
+
 
 def scroll_page(driver, pause_time, max_scrolls, max_no_change=3):
     # print("Scrolling page...")
@@ -335,6 +388,9 @@ def scroll_page(driver, pause_time, max_scrolls, max_no_change=3):
 
 
 def wait_for_element(driver, timeout, by, value):
+    from selenium.common.exceptions import TimeoutException
+    from selenium.webdriver.support.ui import WebDriverWait
+    from selenium.webdriver.support import expected_conditions as EC
     try:
         WebDriverWait(driver, timeout).until(
             EC.presence_of_element_located((by, value))
@@ -342,3 +398,12 @@ def wait_for_element(driver, timeout, by, value):
     except TimeoutException:
         return False
     return True
+
+
+def create_driver():
+    from selenium import webdriver
+
+    options = webdriver.FirefoxOptions()
+    options.add_argument('--headless')
+    driver = webdriver.Firefox(options=options)
+    return driver
